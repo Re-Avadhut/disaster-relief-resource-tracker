@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Disaster Relief Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-layout">
+            <div class="login-intro">
+                <div class="brand-mark" aria-label="Relief support icon">
+                    <svg viewBox="0 0 48 48" aria-hidden="true">
+                        <path d="M24 40S8 30.4 8 18.5C8 12.7 12.3 9 17.2 9c3 0 5.5 1.5 6.8 3.8C25.3 10.5 27.8 9 30.8 9 35.7 9 40 12.7 40 18.5 40 30.4 24 40 24 40Z"/>
+                        <path d="M24 17v11M18.5 22.5h11"/>
+                    </svg>
+                </div>
+                <h1>Disaster Relief<br>Resource Tracker</h1>
+                <p>A simple platform for connecting people in need with relief centers and essential resources.</p>
+                <div class="feature-list">
+                    <div>✓ Track relief center resources</div>
+                    <div>✓ Manage incoming help requests</div>
+                    <div>✓ Monitor urgent and low-stock items</div>
+                </div>
+            </div>
+
+            <div class="login-box">
+                <h1>Welcome back</h1>
+                <p class="subtitle">Sign in to manage your relief center</p>
+            
+            <div id="alert-box"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
+            
+            <div class="public-help-card">
+                <div class="public-help-icon">♥</div>
+                <div>
+                    <strong>Need help?</strong>
+                    <p>You do not need an account. Submit a request to a relief center.</p>
+                    <a class="public-help-link" href="public-request.html">Request help now →</a>
+                </div>
+            </div>
+
+            <div class="links">
+                <p>Admin? Use your admin credentials to login above</p>
+            </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

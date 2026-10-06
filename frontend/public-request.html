@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Help - Disaster Relief Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand"><span class="brand-mark small-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 40S8 30.4 8 18.5C8 12.7 12.3 9 17.2 9c3 0 5.5 1.5 6.8 3.8C25.3 10.5 27.8 9 30.8 9 35.7 9 40 12.7 40 18.5 40 30.4 24 40 24 40Z"/><path d="M24 17v11M18.5 22.5h11"/></svg></span><h1>Disaster Relief Tracker</h1></div>
+        <div class="nav-links">
+            <a href="public-request.html" class="active public-nav-link">♥ Request Help</a>
+            <a href="index.html">Staff Login</a>
+        </div>
+    </nav>
+
+    <div class="page-container narrow-container">
+        <div class="page-banner">
+            <span class="banner-label">PUBLIC HELP PORTAL</span>
+            <h2>Request help from a relief center</h2>
+            <p>You are in the right place. Tell us what you need, and a relief center will review your request as soon as possible.</p>
+        </div>
+        <div class="card">
+            <div class="card-header">Tell us how we can help</div>
+            <p class="muted-text request-intro">
+                Fill out this form to request disaster relief resources. A relief center will be assigned to your case.
+            </p>
+            
+            <div id="alert-box"></div>
+            
+            <form id="helpRequestForm">
+                <div class="form-group">
+                    <label for="name">Your Name *</label>
+                    <input type="text" id="name" required placeholder="e.g. Rajesh Kumar">
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location / Area *</label>
+                    <input type="text" id="location" required placeholder="e.g. Flood-affected area, Patna">
+                </div>
+                
+                <h3 class="form-section-title">Request details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="needType">Type of Need *</label>
+                        <select id="needType" required>
+                            <option value="">Select...</option>
+                            <option value="food">Food</option>
+                            <option value="water">Clean Water</option>
+                            <option value="medical">Medical Supplies</option>
+                            <option value="shelter">Shelter</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="urgency">Urgency Level *</label>
+                        <select id="urgency" required>
+                            <option value="">Select...</option>
+                            <option value="1">Critical - Life threatening</option>
+                            <option value="2">High - Immediate need</option>
+                            <option value="3">Medium - Important but not urgent</option>
+                            <option value="4">Low - Can wait a day</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contactPhone">Contact Phone (optional)</label>
+                    <input type="tel" id="contactPhone" placeholder="+91-XXXXXXXXXX">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Describe Your Need *</label>
+                    <textarea id="description" required placeholder="e.g. Family of 6, no food or clean water for 2 days. Elderly parents need medication."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary full-width-button">
+                    Submit Help Request
+                </button>
+            </form>
+            
+            <div id="successMessage" class="success-panel">
+                <div class="success-icon">✓</div>
+                <p class="success-title">
+                    Your help request has been received.
+                </p>
+                <p class="success-help">
+                    A relief center will be assigned to assist you. Please keep your phone accessible.
+                </p>
+                <p class="request-reference">Request reference: <strong id="requestId">Not available</strong></p>
+                <button class="btn btn-outline" onclick="resetForm()">Submit Another Request</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/public-request.js"></script>
+</body>
+</html>

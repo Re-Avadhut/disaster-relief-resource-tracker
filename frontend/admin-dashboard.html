@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Disaster Relief Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand"><span class="brand-mark small-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 40S8 30.4 8 18.5C8 12.7 12.3 9 17.2 9c3 0 5.5 1.5 6.8 3.8C25.3 10.5 27.8 9 30.8 9 35.7 9 40 12.7 40 18.5 40 30.4 24 40 24 40Z"/><path d="M24 17v11M18.5 22.5h11"/></svg></span><h1>Disaster Relief Tracker</h1></div>
+        <div class="nav-links">
+            <a href="admin-dashboard.html" class="active">Admin Dashboard</a>
+            <a href="public-request.html" class="public-nav-link">♥ Request Help</a>
+            <span class="user-info" id="userInfo"></span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="page-banner">
+            <h2>Admin overview</h2>
+            <p>Monitor relief operations, respond to requests, and manage your centers from one place.</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">🏠</div>
+                <div class="stat-value" id="statCenters">-</div>
+                <div class="stat-label">Relief Centers</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value" id="statPending">-</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-value" id="statUrgent">-</div>
+                <div class="stat-label">Critical Requests</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-icon">📦</div>
+                <div class="stat-value" id="statLowStock">-</div>
+                <div class="stat-label">Low Stock Alerts</div>
+            </div>
+        </div>
+
+        <!-- Help Requests Section -->
+        <div class="card">
+            <div class="card-header">Help Requests</div>
+            <div class="filter-bar">
+                <select id="filterStatus">
+                    <option value="">All Statuses</option>
+                    <option value="pending" selected>Pending</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="resolved">Resolved</option>
+                </select>
+                <select id="filterSort">
+                    <option value="urgency">Sort by Urgency</option>
+                    <option value="newest">Sort by Newest</option>
+                </select>
+                <input type="text" id="filterLocation" placeholder="Filter by location...">
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Requester</th>
+                            <th>Location</th>
+                            <th>Need</th>
+                            <th>Urgency</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTableBody">
+                        <tr><td colspan="7" class="empty-state">Loading requests...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Low Stock Overview -->
+        <div class="card">
+            <div class="card-header">Low Stock Alerts (All Centers)</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Center</th>
+                            <th>Location</th>
+                            <th>Resource</th>
+                            <th>Current Stock</th>
+                            <th>Threshold</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lowStockTableBody">
+                        <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- All Centers Overview -->
+        <div class="card">
+            <div class="card-header">All Relief Centers</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Contact</th>
+                            <th>Staff Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="centersTableBody">
+                        <tr><td colspan="5" class="empty-state">Loading centers...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Register New Center -->
+        <div class="card">
+            <div class="card-header">Register New Relief Center</div>
+            <form id="registerCenterForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="centerName">Center Name *</label>
+                        <input type="text" id="centerName" required placeholder="e.g. Mumbai Relief Center">
+                    </div>
+                    <div class="form-group">
+                        <label for="centerLocation">Location *</label>
+                        <input type="text" id="centerLocation" required placeholder="e.g. Andheri, Mumbai">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactPhone">Contact Phone</label>
+                        <input type="tel" id="contactPhone" placeholder="+91-XXXXXXXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">Contact Email</label>
+                        <input type="email" id="contactEmail" placeholder="center@relief.org">
+                    </div>
+                    <div class="form-group">
+                        <label for="staffEmail">Staff Login Email *</label>
+                        <input type="email" id="staffEmail" required placeholder="staff@relief.org">
+                    </div>
+                    <div class="form-group">
+                        <label for="staffPassword">Staff Password *</label>
+                        <input type="password" id="staffPassword" required placeholder="Set initial password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Register Center</button>
+            </form>
+            <div id="registerAlert" class="alert-space"></div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>

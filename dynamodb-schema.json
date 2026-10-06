@@ -1,0 +1,142 @@
+{
+  "tables": {
+    "ReliefCenters": {
+      "description": "Stores registered relief center details. Each center is a unique entity with contact info and location.",
+      "keySchema": {
+        "partitionKey": {
+          "attributeName": "centerId",
+          "attributeType": "S",
+          "rationale": "UUID assigned to each center. Guarantees unique lookups by center ID — the most common access pattern (get one center's details)."
+        }
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "StaffEmail-index",
+          "keySchema": {
+            "partitionKey": "staffEmail"
+          },
+          "projection": "ALL",
+          "rationale": "When a staff member logs in, we look up which center they manage. Query by staffEmail returns the center record directly."
+        }
+      ],
+      "attributes": {
+        "centerId": "String (UUID)",
+        "name": "String - center name",
+        "location": "String - address/area name",
+        "latitude": "Number - for future geo queries",
+        "longitude": "Number - for future geo queries",
+        "contactPhone": "String",
+        "contactEmail": "String",
+        "staffEmail": "String - email of the staff member who manages this center (links to Users table)",
+        "createdAt": "String (ISO 8601 timestamp)",
+        "status": "String - active/inactive"
+      }
+    },
+
+    "Inventory": {
+      "description": "Tracks resource quantities per center. Uses composite key so each center has exactly one record per resource type.",
+      "keySchema": {
+        "partitionKey": {
+          "attributeName": "centerId",
+          "attributeType": "S",
+          "rationale": "Groups all resource types under one center. A Query on centerId returns the full inventory for that center in one call."
+        },
+        "sortKey": {
+          "attributeName": "resourceType",
+          "attributeType": "S",
+          "rationale": "Distinguishes food/water/medical/shelter within a center. Enables single-item lookups (GetItem) and updates (UpdateItem) for a specific resource."
+        }
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "LowStock-index",
+          "keySchema": {
+            "partitionKey": "lowStock"
+          },
+          "sortKey": "resourceType",
+          "projection": "ALL",
+          "rationale": "Enables the admin to scan all critically low resources across ALL centers in one query. 'lowStock' is a boolean/string flag set by the Lambda when quantity < threshold."
+        }
+      ],
+      "attributes": {
+        "centerId": "String (UUID) - FK to ReliefCenters",
+        "resourceType": "String - food | water | medical | shelter",
+        "quantity": "Number - current stock level",
+        "unit": "String - kg / liters / kits / beds",
+        "threshold": "Number - minimum quantity before alert triggers",
+        "lowStock": "String - 'true' or 'false' - denormalized flag for GSI filtering",
+        "lastUpdated": "String (ISO 8601 timestamp)"
+      }
+    },
+
+    "HelpRequests": {
+      "description": "Public help requests submitted by anyone. Each request is independent and tracked through its lifecycle.",
+      "keySchema": {
+        "partitionKey": {
+          "attributeName": "requestId",
+          "attributeType": "S",
+          "rationale": "UUID per request. Direct lookups when updating status or viewing a single request."
+        }
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "StatusUrgency-index",
+          "keySchema": {
+            "partitionKey": "status",
+            "sortKey": "urgency"
+          },
+          "projection": "ALL",
+          "rationale": "Admin dashboard needs requests sorted by urgency within a status (e.g., all 'pending' requests, highest urgency first). Composite sort on urgency (1=critical, 2=high, 3=medium, 4=low) gives natural ordering."
+        },
+        {
+          "indexName": "LocationStatus-index",
+          "keySchema": {
+            "partitionKey": "location",
+            "sortKey": "status"
+          },
+          "projection": "ALL",
+          "rationale": "Admin can filter requests by geographic area and see which are still pending. Useful for regional disaster response coordination."
+        }
+      ],
+      "attributes": {
+        "requestId": "String (UUID)",
+        "name": "String - requester name",
+        "location": "String - area/district/city",
+        "needType": "String - food | medical | shelter | other",
+        "urgency": "Number - 1=critical, 2=high, 3=medium, 4=low",
+        "urgencyLabel": "String - human readable: critical/high/medium/low",
+        "description": "String - free text describing the need",
+        "contactPhone": "String - optional phone",
+        "status": "String - pending | assigned | resolved",
+        "assignedCenterId": "String - UUID of assigned center (null until assigned)",
+        "createdAt": "String (ISO 8601 timestamp)"
+      }
+    },
+
+    "Users": {
+      "description": "Stores user accounts for authentication. Maps to Cognito but also stored in DynamoDB for quick role lookups.",
+      "keySchema": {
+        "partitionKey": {
+          "attributeName": "email",
+          "attributeType": "S",
+          "rationale": "Email is the unique identifier for login. Direct GetItem by email to verify credentials and fetch role."
+        }
+      },
+      "attributes": {
+        "email": "String - unique, used as login ID",
+        "passwordHash": "String - bcrypt hash (in real app, Cognito handles this)",
+        "name": "String - display name",
+        "role": "String - admin | staff",
+        "centerId": "String - FK to ReliefCenters (only for staff role)",
+        "createdAt": "String (ISO 8601 timestamp)"
+      }
+    }
+  },
+
+  "designDecisions": {
+    "whySingleTableDesignWasRejected": "For a course project, separate tables are clearer to explain in a viva. Each table maps 1:1 to a concept (center, inventory, request, user). Single-table design is better at scale but harder to explain.",
+    "whyGSIonLowStock": "The lowStock boolean flag is denormalized. When inventory is updated, the Lambda sets lowStock='true' if quantity < threshold. The GSI lets us query all low-stock items across all centers without scanning the entire Inventory table.",
+    "whyCompositeKeyOnInventory": "centerId + resourceType means: (a) get full inventory for a center = 1 Query, (b) update a specific resource = 1 UpdateItem with exact key, (c) no duplicate resource types per center (DynamoDB enforces uniqueness of composite keys).",
+    "whyUrgencyIsNumber": "DynamoDB sorts numbers numerically. urgency=1 (critical) sorts before urgency=4 (low) in ascending order, which is the natural priority order for the admin dashboard."
+  }
+}
