@@ -8,10 +8,10 @@ A serverless AWS application for tracking disaster relief resources, managing re
 ┌─────────────────────────────────────────────────────────┐
 │                    USER'S BROWSER                       │
 │                                                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌───────────────┐  │
-│  │ Login Page  │  │ Center Dash │  │ Admin Dashboard│  │
-│  │ index.html  │  │center-dash. │  │ admin-dash.html│  │
-│  └──────┬──────┘  └──────┬──────┘  └───────┬───────┘  │
+│  ┌─────────────┐  ┌─────────────┐  ┌───────────────┐    │
+│  │ Login Page  │  │ Center Dash │  │ Admin Dashboard│   │
+│  │ index.html  │  │center-dash. │  │ admin-dash.html│   │
+│  └──────┬──────┘  └──────┬──────┘  └───────┬───────┘    │
 │         │                │                  │           │
 │         └────────────────┼──────────────────┘           │
 │                          │                              │
