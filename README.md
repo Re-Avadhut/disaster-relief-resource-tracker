@@ -2,6 +2,10 @@
 
 A serverless AWS application for tracking disaster relief resources, managing relief centers, and connecting help seekers with available aid.
 
+For the project showcase, deployment walkthrough, Lambda explanations,
+architecture notes, and viva questions, see
+[PROJECT_SHOWCASE_GUIDE.md](PROJECT_SHOWCASE_GUIDE.md).
+
 ## Frontend
 
 The frontend keeps the existing static HTML and JavaScript structure. Tailwind
