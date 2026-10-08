@@ -2,6 +2,52 @@
 
 A serverless AWS application for tracking disaster relief resources, managing relief centers, and connecting help seekers with available aid.
 
+## Tests
+
+The project includes local unit tests for the Lambda handlers. They use mocked
+DynamoDB tables, so they do not require AWS credentials or access to a deployed
+AWS account.
+
+Run them from the project root:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+### Deployed AWS tests
+
+The opt-in deployment tests call the deployed API Gateway endpoint and can
+also verify the API Gateway and Lambda resources through the AWS CLI. They are
+disabled by default so normal local tests never modify AWS resources.
+
+Refresh the AWS CLI session first if required:
+
+```powershell
+aws login
+```
+
+Run the read-only API smoke tests:
+
+```powershell
+$env:RUN_AWS_TESTS = "1"
+python -m unittest tests.test_aws_deployment -v
+```
+
+Run the AWS CLI resource checks:
+
+```powershell
+$env:RUN_AWS_CLI_TESTS = "1"
+python -m unittest tests.test_aws_deployment.AwsCliDeploymentTests -v
+```
+
+The optional create-request test writes one clearly labelled test request to
+DynamoDB. Run it only when that test data is acceptable:
+
+```powershell
+$env:AWS_TEST_CREATE_DATA = "1"
+python -m unittest tests.test_aws_deployment.DeployedApiTests.test_api_gateway_creates_help_request -v
+```
+
 ## Architecture Overview
 
 ```
