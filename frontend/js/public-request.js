@@ -9,6 +9,12 @@
     const form = document.getElementById('helpRequestForm');
     const alertBox = document.getElementById('alert-box');
     const successMessage = document.getElementById('successMessage');
+    const description = document.getElementById('description');
+    const descriptionCount = document.getElementById('descriptionCount');
+
+    description?.addEventListener('input', function() {
+        descriptionCount.textContent = `${description.value.length}/500`;
+    });
     
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -28,7 +34,11 @@
         
         // Client-side validation
         if (!data.name || !data.location || !data.needType || !data.urgency || !data.description) {
-            alertBox.innerHTML = '<div class="alert alert-error">Please fill in all required fields.</div>';
+            alertBox.innerHTML = '<div class="alert alert-error" role="alert">Please fill in all required fields.</div>';
+            return;
+        }
+        if (data.description.length < 10) {
+            alertBox.innerHTML = '<div class="alert alert-error" role="alert">Please provide a little more detail about the help needed.</div>';
             return;
         }
         
@@ -48,7 +58,7 @@
             successMessage.style.display = 'block';
             
         } catch (error) {
-            alertBox.innerHTML = `<div class="alert alert-error">Submission failed: ${error.message}. Please try again.</div>`;
+            alertBox.innerHTML = `<div class="alert alert-error" role="alert">Submission failed. Please try again.</div>`;
             
             const btn = form.querySelector('button[type="submit"]');
             btn.disabled = false;
@@ -69,6 +79,7 @@ function resetForm() {
     form.style.display = 'block';
     successMessage.style.display = 'none';
     document.getElementById('requestId').textContent = 'Not available';
+    if (descriptionCount) descriptionCount.textContent = '0/500';
     
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = false;

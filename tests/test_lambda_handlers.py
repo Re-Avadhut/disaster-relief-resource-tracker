@@ -245,6 +245,21 @@ class LambdaHandlerTests(unittest.TestCase):
         self.assertEqual(response["statusCode"], 400)
         module.requests_table.update_item.assert_not_called()
 
+    def test_update_request_status_requires_center_when_assigning(self):
+        module = load_handler("update_request_status")
+
+        response = module.lambda_handler(
+            {
+                "pathParameters": {"requestId": "request-1"},
+                "body": json.dumps({"status": "assigned"}),
+            },
+            None,
+        )
+
+        self.assertEqual(response["statusCode"], 400)
+        self.assertIn("assignedCenterId is required", response["body"])
+        module.requests_table.update_item.assert_not_called()
+
     def test_handlers_return_500_when_dynamodb_fails(self):
         cases = [
             (
@@ -272,7 +287,10 @@ class LambdaHandlerTests(unittest.TestCase):
                 "update_request_status",
                 {
                     "pathParameters": {"requestId": "request-1"},
-                    "body": json.dumps({"status": "assigned"}),
+                    "body": json.dumps({
+                        "status": "assigned",
+                        "assignedCenterId": "center-1",
+                    }),
                 },
                 "requests_table",
                 "update_item",

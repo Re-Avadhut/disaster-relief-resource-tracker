@@ -23,6 +23,14 @@
     // Load center info and inventory on page load
     loadCenterInfo(centerId);
     loadInventory(centerId);
+    document.getElementById('refreshDashboard')?.addEventListener('click', async function() {
+        this.disabled = true;
+        this.textContent = 'Refreshing...';
+        await Promise.all([loadCenterInfo(centerId), loadInventory(centerId)]);
+        document.getElementById('lastUpdated').textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        this.disabled = false;
+        this.textContent = 'Refresh data';
+    });
     
     // Set up the inventory update form
     document.getElementById('updateInventoryForm').addEventListener('submit', handleInventoryUpdate);
@@ -73,6 +81,9 @@ async function loadInventory(centerId) {
         // Build inventory cards
         grid.innerHTML = items.map(item => {
             const isLow = item.lowStock === 'true';
+            const quantity = Number(item.quantity) || 0;
+            const threshold = Number(item.threshold) || 0;
+            const percentage = threshold > 0 ? Math.min((quantity / threshold) * 100, 100) : 100;
             return `
                 <div class="inventory-item ${isLow ? 'low-stock' : ''}">
                     <div class="resource-label">${escapeHtml(item.resourceType)}</div>
@@ -81,6 +92,7 @@ async function loadInventory(centerId) {
                     <div class="inventory-threshold">
                         Threshold: ${item.threshold} ${escapeHtml(item.unit)}
                     </div>
+                    <div class="inventory-progress" aria-label="${Math.round(percentage)} percent of threshold"><span style="width: ${percentage}%"></span></div>
                     ${isLow ? '<div class="badge badge-lowstock inventory-badge">LOW STOCK</div>' : ''}
                 </div>
             `;

@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Disaster Relief Tracker</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="antialiased">
     <nav class="navbar">
         <div class="brand"><span class="brand-mark small-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 40S8 30.4 8 18.5C8 12.7 12.3 9 17.2 9c3 0 5.5 1.5 6.8 3.8C25.3 10.5 27.8 9 30.8 9 35.7 9 40 12.7 40 18.5 40 30.4 24 40 24 40Z"/><path d="M24 17v11M18.5 22.5h11"/></svg></span><h1>Disaster Relief Tracker</h1></div>
         <div class="nav-links">
@@ -17,10 +18,11 @@
         </div>
     </nav>
 
-    <div class="page-container">
+    <div class="page-container mx-auto">
         <div class="page-banner">
             <h2>Admin overview</h2>
             <p>Monitor relief operations, respond to requests, and manage your centers from one place.</p>
+            <div class="banner-actions"><span id="lastUpdated">Not refreshed yet</span><button class="btn btn-outline btn-sm" id="refreshDashboard">Refresh data</button></div>
         </div>
 
         <!-- Stats Overview -->
@@ -48,8 +50,8 @@
         </div>
 
         <!-- Help Requests Section -->
-        <div class="card">
-            <div class="card-header">Help Requests</div>
+        <div class="card rounded-2xl shadow-sm">
+            <div class="card-header card-header-row"><span>Help Requests</span><span class="section-hint">Review, assign, and resolve requests</span></div>
             <div class="filter-bar">
                 <select id="filterStatus">
                     <option value="">All Statuses</option>
@@ -64,6 +66,7 @@
                 <input type="text" id="filterLocation" placeholder="Filter by location...">
             </div>
             <div class="table-wrapper">
+                <p class="table-scroll-hint">Swipe horizontally to view all request details on a smaller screen.</p>
                 <table>
                     <thead>
                         <tr>
@@ -84,8 +87,8 @@
         </div>
 
         <!-- Low Stock Overview -->
-        <div class="card">
-            <div class="card-header">Low Stock Alerts (All Centers)</div>
+        <div class="card rounded-2xl shadow-sm">
+            <div class="card-header card-header-row"><span>Low Stock Alerts</span><span class="section-hint">Resources below their threshold</span></div>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -105,8 +108,8 @@
         </div>
 
         <!-- All Centers Overview -->
-        <div class="card">
-            <div class="card-header">All Relief Centers</div>
+        <div class="card rounded-2xl shadow-sm">
+            <div class="card-header card-header-row"><span>All Relief Centers</span><span class="section-hint">Registered response locations</span></div>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -125,37 +128,67 @@
             </div>
         </div>
 
+        <div class="modal-backdrop" id="requestModal" hidden>
+            <div class="modal" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
+                <div class="modal-header"><h2 id="requestModalTitle">Request details</h2><button class="modal-close" id="closeRequestModal" aria-label="Close">&times;</button></div>
+                <div id="requestModalBody"></div>
+            </div>
+        </div>
+
+        <div class="modal-backdrop" id="assignModal" hidden>
+            <div class="modal" role="dialog" aria-modal="true" aria-labelledby="assignModalTitle">
+                <div class="modal-header">
+                    <h2 id="assignModalTitle">Assign request</h2>
+                    <button class="modal-close" id="closeAssignModal" aria-label="Close">&times;</button>
+                </div>
+                <p class="muted-text assign-summary" id="assignSummary"></p>
+                <form id="assignRequestForm">
+                    <div class="form-group">
+                        <label for="assignCenterSelect">Relief center *</label>
+                        <select id="assignCenterSelect" required>
+                            <option value="">Select an active relief center</option>
+                        </select>
+                    </div>
+                    <div id="assignAlert" class="alert-space"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" id="cancelAssign">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="confirmAssign">Assign request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Register New Center -->
-        <div class="card">
+        <div class="card rounded-2xl shadow-sm">
             <div class="card-header">Register New Relief Center</div>
             <form id="registerCenterForm">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="centerName">Center Name *</label>
-                        <input type="text" id="centerName" required placeholder="e.g. Mumbai Relief Center">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="text" id="centerName" required placeholder="e.g. Mumbai Relief Center">
                     </div>
                     <div class="form-group">
                         <label for="centerLocation">Location *</label>
-                        <input type="text" id="centerLocation" required placeholder="e.g. Andheri, Mumbai">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="text" id="centerLocation" required placeholder="e.g. Andheri, Mumbai">
                     </div>
                     <div class="form-group">
                         <label for="contactPhone">Contact Phone</label>
-                        <input type="tel" id="contactPhone" placeholder="+91-XXXXXXXXXX">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="tel" id="contactPhone" placeholder="+91-XXXXXXXXXX">
                     </div>
                     <div class="form-group">
                         <label for="contactEmail">Contact Email</label>
-                        <input type="email" id="contactEmail" placeholder="center@relief.org">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="email" id="contactEmail" placeholder="center@relief.org">
                     </div>
                     <div class="form-group">
                         <label for="staffEmail">Staff Login Email *</label>
-                        <input type="email" id="staffEmail" required placeholder="staff@relief.org">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="email" id="staffEmail" required placeholder="staff@relief.org">
                     </div>
                     <div class="form-group">
                         <label for="staffPassword">Staff Password *</label>
-                        <input type="password" id="staffPassword" required placeholder="Set initial password">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="password" id="staffPassword" required placeholder="Set initial password">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Register Center</button>
+                <button type="submit" class="btn btn-primary shadow-sm transition hover:-translate-y-0.5">Register Center</button>
             </form>
             <div id="registerAlert" class="alert-space"></div>
         </div>

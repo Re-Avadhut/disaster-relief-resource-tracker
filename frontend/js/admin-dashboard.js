@@ -17,6 +17,17 @@
     loadRequests();
     loadLowStock();
     loadCenters();
+    document.getElementById('refreshDashboard')?.addEventListener('click', refreshDashboard);
+    document.getElementById('closeRequestModal')?.addEventListener('click', closeRequestModal);
+    document.getElementById('closeAssignModal')?.addEventListener('click', closeAssignModal);
+    document.getElementById('cancelAssign')?.addEventListener('click', closeAssignModal);
+    document.getElementById('assignRequestForm')?.addEventListener('submit', confirmAssignment);
+    document.getElementById('requestModal')?.addEventListener('click', (event) => {
+        if (event.target.id === 'requestModal') closeRequestModal();
+    });
+    document.getElementById('assignModal')?.addEventListener('click', (event) => {
+        if (event.target.id === 'assignModal') closeAssignModal();
+    });
     
     // Set up filter event listeners
     document.getElementById('filterStatus').addEventListener('change', loadRequests);
@@ -26,6 +37,15 @@
     // Set up register center form
     document.getElementById('registerCenterForm').addEventListener('submit', handleRegisterCenter);
 })();
+
+async function refreshDashboard() {
+    const button = document.getElementById('refreshDashboard');
+    if (button) { button.disabled = true; button.textContent = 'Refreshing...'; }
+    await Promise.all([loadStats(), loadRequests(), loadLowStock(), loadCenters()]);
+    const lastUpdated = document.getElementById('lastUpdated');
+    if (lastUpdated) lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    if (button) { button.disabled = false; button.textContent = 'Refresh data'; }
+}
 
 /**
  * Loads and displays dashboard statistics.
@@ -54,6 +74,7 @@ async function loadRequests() {
     const locationFilter = document.getElementById('filterLocation').value.trim().toLowerCase();
     
     try {
+        tbody.innerHTML = '<tr><td colspan="7" class="loading-state">Loading requests...</td></tr>';
         const data = await listRequests(status || null, sort);
         let requests = data.requests || [];
         
@@ -65,7 +86,7 @@ async function loadRequests() {
         }
         
         if (requests.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No requests found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><strong>No requests found</strong>New requests will appear here.</td></tr>';
             return;
         }
         
@@ -79,10 +100,10 @@ async function loadRequests() {
                 <td>${formatDate(req.createdAt)}</td>
                 <td>
                     ${req.status === 'pending' ? 
-                        `<button class="btn btn-sm btn-success" onclick="assignRequest('${req.requestId}')">Assign</button>` :
+                        `<div class="request-actions"><button class="btn btn-sm btn-outline" onclick="showRequestDetails(${JSON.stringify(req).replace(/"/g, '&quot;')})">View</button> <button class="btn btn-sm btn-success" onclick="assignRequest(${JSON.stringify(req).replace(/"/g, '&quot;')})">Assign</button></div>` :
                         req.status === 'assigned' ?
-                        `<button class="btn btn-sm btn-primary" onclick="resolveRequest('${req.requestId}')">Resolve</button>` :
-                        '<span class="done-text">Done</span>'
+                        `<div class="request-actions"><button class="btn btn-sm btn-outline" onclick="showRequestDetails(${JSON.stringify(req).replace(/"/g, '&quot;')})">View</button> <button class="btn btn-sm btn-primary" onclick="resolveRequest('${req.requestId}')">Resolve</button></div>` :
+                        `<button class="btn btn-sm btn-outline" onclick="showRequestDetails(${JSON.stringify(req).replace(/"/g, '&quot;')})">View</button>`
                     }
                 </td>
             </tr>
@@ -153,11 +174,12 @@ async function loadCenters() {
     }
 }
 
+let requestBeingAssigned = null;
+
 /**
- * Marks a pending request as "assigned".
- * In a real app, you'd select which center to assign.
+ * Opens the assignment dialog and lets the admin choose an active center.
  */
-async function assignRequest(requestId) {
+async function assignRequest(request) {
     try {
         const data = await listCenters('active');
         const activeCenters = data.centers || [];
@@ -167,16 +189,46 @@ async function assignRequest(requestId) {
             return;
         }
 
-        const assignedCenterId = activeCenters[0].centerId;
-        await updateRequestStatus(requestId, {
-            status: 'assigned',
-            assignedCenterId
-        });
-
-        loadRequests();
-        loadStats();
+        requestBeingAssigned = request;
+        const select = document.getElementById('assignCenterSelect');
+        const summary = document.getElementById('assignSummary');
+        if (!select || !summary) return;
+        select.innerHTML = '<option value="">Select an active relief center</option>' +
+            activeCenters.map(center =>
+                `<option value="${escapeHtml(center.centerId)}">${escapeHtml(center.name)} — ${escapeHtml(center.location)}</option>`
+            ).join('');
+        summary.textContent = `${request.name} · ${request.needType} · ${request.location}`;
+        document.getElementById('assignAlert').innerHTML = '';
+        document.getElementById('assignModal').hidden = false;
     } catch (error) {
         alert('Failed to assign request: ' + error.message);
+    }
+}
+
+async function confirmAssignment(event) {
+    event.preventDefault();
+    if (!requestBeingAssigned) return;
+    const centerId = document.getElementById('assignCenterSelect').value;
+    const alertDiv = document.getElementById('assignAlert');
+    const button = document.getElementById('confirmAssign');
+    if (!centerId) {
+        alertDiv.innerHTML = '<div class="alert alert-warning">Select a relief center first.</div>';
+        return;
+    }
+    button.disabled = true;
+    button.textContent = 'Assigning...';
+    try {
+        await updateRequestStatus(requestBeingAssigned.requestId, {
+            status: 'assigned',
+            assignedCenterId: centerId
+        });
+        closeAssignModal();
+        await Promise.all([loadRequests(), loadStats()]);
+    } catch (error) {
+        alertDiv.innerHTML = `<div class="alert alert-error">Failed to assign request: ${escapeHtml(error.message)}</div>`;
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Assign request';
     }
 }
 
@@ -185,12 +237,43 @@ async function assignRequest(requestId) {
  */
 async function resolveRequest(requestId) {
     try {
+        if (!window.confirm('Mark this request as resolved?')) return;
         await updateRequestStatus(requestId, { status: 'resolved' });
         loadRequests();
         loadStats();
     } catch (error) {
         alert('Failed to resolve request: ' + error.message);
     }
+}
+
+function showRequestDetails(request) {
+        const modal = document.getElementById('requestModal');
+        const body = document.getElementById('requestModalBody');
+        if (!modal || !body) return;
+        body.innerHTML = `
+            <div class="detail-grid">
+                <div class="detail-item"><small>Requester</small><p>${escapeHtml(request.name)}</p></div>
+                <div class="detail-item"><small>Location</small><p>${escapeHtml(request.location)}</p></div>
+                <div class="detail-item"><small>Need</small><p>${escapeHtml(request.needType)}</p></div>
+                <div class="detail-item"><small>Urgency</small><p><span class="badge badge-${escapeHtml(request.urgencyLabel)}">${escapeHtml(request.urgencyLabel)}</span></p></div>
+                <div class="detail-item"><small>Status</small><p><span class="badge badge-${escapeHtml(request.status)}">${escapeHtml(request.status)}</span></p></div>
+                <div class="detail-item"><small>Contact</small><p>${escapeHtml(request.contactPhone || 'Not provided')}</p></div>
+            </div>
+            <div class="detail-item" style="margin-top: .9rem"><small>Description</small><p>${escapeHtml(request.description)}</p></div>
+            <p class="muted-text" style="margin-top: .8rem">Received ${formatDate(request.createdAt)}</p>
+        `;
+        modal.hidden = false;
+    }
+
+function closeRequestModal() {
+        const modal = document.getElementById('requestModal');
+        if (modal) modal.hidden = true;
+}
+
+function closeAssignModal() {
+    const modal = document.getElementById('assignModal');
+    if (modal) modal.hidden = true;
+    requestBeingAssigned = null;
 }
 
 /**

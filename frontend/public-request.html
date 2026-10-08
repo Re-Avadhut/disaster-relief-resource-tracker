@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request Help - Disaster Relief Tracker</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="antialiased">
     <nav class="navbar">
         <div class="brand"><span class="brand-mark small-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 40S8 30.4 8 18.5C8 12.7 12.3 9 17.2 9c3 0 5.5 1.5 6.8 3.8C25.3 10.5 27.8 9 30.8 9 35.7 9 40 12.7 40 18.5 40 30.4 24 40 24 40Z"/><path d="M24 17v11M18.5 22.5h11"/></svg></span><h1>Disaster Relief Tracker</h1></div>
         <div class="nav-links">
@@ -15,13 +16,18 @@
         </div>
     </nav>
 
-    <div class="page-container narrow-container">
+    <div class="page-container narrow-container mx-auto">
         <div class="page-banner">
             <span class="banner-label">PUBLIC HELP PORTAL</span>
             <h2>Request help from a relief center</h2>
             <p>You are in the right place. Tell us what you need, and a relief center will review your request as soon as possible.</p>
         </div>
-        <div class="card">
+        <div class="request-steps" aria-label="Request process">
+            <div class="request-step active"><span>1</span><strong>Tell us about you</strong></div>
+            <div class="request-step"><span>2</span><strong>Describe your need</strong></div>
+            <div class="request-step"><span>3</span><strong>Get support</strong></div>
+        </div>
+        <div class="card rounded-2xl shadow-sm">
             <div class="card-header">Tell us how we can help</div>
             <p class="muted-text request-intro">
                 Fill out this form to request disaster relief resources. A relief center will be assigned to your case.
@@ -32,19 +38,19 @@
             <form id="helpRequestForm">
                 <div class="form-group">
                     <label for="name">Your Name *</label>
-                    <input type="text" id="name" required placeholder="e.g. Rajesh Kumar">
+                    <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="text" id="name" required placeholder="e.g. Rajesh Kumar">
                 </div>
                 
                 <div class="form-group">
                     <label for="location">Location / Area *</label>
-                    <input type="text" id="location" required placeholder="e.g. Flood-affected area, Patna">
+                    <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="text" id="location" required placeholder="e.g. Flood-affected area, Patna">
                 </div>
                 
                 <h3 class="form-section-title">Request details</h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="needType">Type of Need *</label>
-                        <select id="needType" required>
+                        <select class="transition duration-200 focus:ring-4 focus:ring-blue-100" id="needType" required>
                             <option value="">Select...</option>
                             <option value="food">Food</option>
                             <option value="water">Clean Water</option>
@@ -55,7 +61,7 @@
                     </div>
                     <div class="form-group">
                         <label for="urgency">Urgency Level *</label>
-                        <select id="urgency" required>
+                        <select class="transition duration-200 focus:ring-4 focus:ring-blue-100" id="urgency" required>
                             <option value="">Select...</option>
                             <option value="1">Critical - Life threatening</option>
                             <option value="2">High - Immediate need</option>
@@ -67,15 +73,17 @@
                 
                 <div class="form-group">
                     <label for="contactPhone">Contact Phone (optional)</label>
-                    <input type="tel" id="contactPhone" placeholder="+91-XXXXXXXXXX">
+                    <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="tel" id="contactPhone" placeholder="+91-XXXXXXXXXX">
                 </div>
                 
                 <div class="form-group">
                     <label for="description">Describe Your Need *</label>
-                    <textarea id="description" required placeholder="e.g. Family of 6, no food or clean water for 2 days. Elderly parents need medication."></textarea>
+                    <textarea class="transition duration-200 focus:ring-4 focus:ring-blue-100" id="description" required maxlength="500" placeholder="e.g. Family of 6, no food or clean water for 2 days. Elderly parents need medication."></textarea>
+                    <div class="field-meta"><span>Include details that can help the relief center respond.</span><span id="descriptionCount">0/500</span></div>
                 </div>
+                <p class="form-note">For immediate life-threatening emergencies, contact your local emergency services.</p>
                 
-                <button type="submit" class="btn btn-primary full-width-button">
+                <button type="submit" class="btn btn-primary full-width-button shadow-sm transition hover:-translate-y-0.5">
                     Submit Help Request
                 </button>
             </form>

@@ -46,6 +46,14 @@ def lambda_handler(event, context):
                 'headers': get_headers(),
                 'body': json.dumps({'error': f'Invalid status. Must be one of: {valid_statuses}'})
             }
+
+        assigned_center_id = body.get('assignedCenterId')
+        if new_status == 'assigned' and not assigned_center_id:
+            return {
+                'statusCode': 400,
+                'headers': get_headers(),
+                'body': json.dumps({'error': 'assignedCenterId is required when assigning a request'})
+            }
         
         # Build update expression
         update_parts = ['#s = :status']
@@ -55,7 +63,7 @@ def lambda_handler(event, context):
         # Optionally assign a center
         if 'assignedCenterId' in body:
             update_parts.append('#ac = :center')
-            expr_values[':center'] = body['assignedCenterId']
+            expr_values[':center'] = assigned_center_id
             expr_names['#ac'] = 'assignedCenterId'
         
         response = requests_table.update_item(

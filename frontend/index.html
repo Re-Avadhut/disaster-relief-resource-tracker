@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Disaster Relief Tracker</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="antialiased">
     <div class="login-container">
         <div class="login-layout">
             <div class="login-intro">
@@ -25,7 +26,7 @@
                 </div>
             </div>
 
-            <div class="login-box">
+            <div class="login-box ring-1 ring-white/10">
                 <h1>Welcome back</h1>
                 <p class="subtitle">Sign in to manage your relief center</p>
             
@@ -34,13 +35,14 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="you@example.com">
+                    <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="email" id="email" required placeholder="you@example.com">
                 </div>
-                <div class="form-group">
+                <div class="form-group password-field">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter password">
+                    <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="password" id="password" required placeholder="Enter password">
+                    <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password">Show</button>
                 </div>
-                <button type="submit" class="btn btn-primary">Sign In</button>
+                <button type="submit" class="btn btn-primary shadow-sm transition hover:-translate-y-0.5">Sign In</button>
             </form>
             
             <div class="public-help-card">
@@ -53,7 +55,7 @@
             </div>
 
             <div class="links">
-                <p>Admin? Use your admin credentials to login above</p>
+                <p>Use your authorized staff or administrator account to continue.</p>
             </div>
             </div>
         </div>

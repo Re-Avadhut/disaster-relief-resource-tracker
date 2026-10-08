@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relief Center Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="antialiased">
     <nav class="navbar">
         <div class="brand"><span class="brand-mark small-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 40S8 30.4 8 18.5C8 12.7 12.3 9 17.2 9c3 0 5.5 1.5 6.8 3.8C25.3 10.5 27.8 9 30.8 9 35.7 9 40 12.7 40 18.5 40 30.4 24 40 24 40Z"/><path d="M24 17v11M18.5 22.5h11"/></svg></span><h1>Disaster Relief Tracker</h1></div>
         <div class="nav-links">
@@ -17,15 +18,16 @@
         </div>
     </nav>
 
-    <div class="page-container">
+    <div class="page-container mx-auto">
         <div class="page-banner">
             <h2>Welcome to your relief center</h2>
             <p>Keep your resource inventory up to date so help can reach people quickly.</p>
+            <div class="banner-actions"><span id="lastUpdated">Not refreshed yet</span><button class="btn btn-outline btn-sm" id="refreshDashboard">Refresh data</button></div>
         </div>
 
         <!-- Center Info Section -->
-        <div class="card">
-            <div class="card-header">Center Information</div>
+        <div class="card rounded-2xl shadow-sm">
+            <div class="card-header card-header-row"><span>Center Information</span><span class="section-hint">Your assigned response location</span></div>
             <div id="centerInfo">
                 <p>Loading center details...</p>
             </div>
@@ -33,26 +35,26 @@
 
         <!-- Inventory Section -->
         <div class="page-header">
-            <h2>Resource Inventory</h2>
+            <div><h2>Resource Inventory</h2><p class="page-intro">Update quantities and thresholds as supplies change.</p></div>
         </div>
         <div id="inventoryGrid" class="inventory-grid">
             <p>Loading inventory...</p>
         </div>
 
         <!-- Low Stock Alerts -->
-        <div class="card low-stock-card" id="lowStockCard">
+        <div class="card low-stock-card rounded-2xl shadow-sm" id="lowStockCard">
             <div class="card-header low-stock-heading">Low Stock Alerts</div>
             <div id="lowStockAlerts"></div>
         </div>
 
         <!-- Update Inventory Form -->
-        <div class="card card-spaced">
-            <div class="card-header">Update Inventory</div>
+        <div class="card card-spaced rounded-2xl shadow-sm">
+            <div class="card-header card-header-row"><span>Update Inventory</span><span class="section-hint">Changes are saved to DynamoDB</span></div>
             <form id="updateInventoryForm">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="resourceType">Resource Type</label>
-                        <select id="resourceType" required>
+                        <select class="transition duration-200 focus:ring-4 focus:ring-blue-100" id="resourceType" required>
                             <option value="food">Food</option>
                             <option value="water">Water</option>
                             <option value="medical">Medical Supplies</option>
@@ -61,18 +63,18 @@
                     </div>
                     <div class="form-group">
                         <label for="quantity">Quantity</label>
-                        <input type="number" id="quantity" min="0" required placeholder="e.g. 150">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="number" id="quantity" min="0" required placeholder="e.g. 150">
                     </div>
                     <div class="form-group">
                         <label for="unit">Unit</label>
-                        <input type="text" id="unit" placeholder="kg / liters / kits / beds">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="text" id="unit" placeholder="kg / liters / kits / beds">
                     </div>
                     <div class="form-group">
                         <label for="threshold">Low-stock Threshold</label>
-                        <input type="number" id="threshold" min="0" placeholder="e.g. 100">
+                        <input class="transition duration-200 focus:ring-4 focus:ring-blue-100" type="number" id="threshold" min="0" placeholder="e.g. 100">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Update Inventory</button>
+                <button type="submit" class="btn btn-primary shadow-sm transition hover:-translate-y-0.5">Update Inventory</button>
             </form>
             <div id="updateAlert" class="alert-space"></div>
         </div>

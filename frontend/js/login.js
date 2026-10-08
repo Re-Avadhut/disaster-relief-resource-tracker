@@ -19,6 +19,15 @@
     
     const form = document.getElementById('loginForm');
     const alertBox = document.getElementById('alert-box');
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('password');
+
+    passwordToggle?.addEventListener('click', function() {
+        const showing = passwordInput.type === 'text';
+        passwordInput.type = showing ? 'password' : 'text';
+        passwordToggle.textContent = showing ? 'Show' : 'Hide';
+        passwordToggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    });
     
     form.addEventListener('submit', async function(e) {
         e.preventDefault();

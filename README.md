@@ -2,6 +2,15 @@
 
 A serverless AWS application for tracking disaster relief resources, managing relief centers, and connecting help seekers with available aid.
 
+## Frontend
+
+The frontend keeps the existing static HTML and JavaScript structure. Tailwind
+CSS is loaded through its browser CDN and is used for utility styling,
+responsive spacing, focus states, and small interaction effects. No React
+build step or frontend framework migration is required. The existing
+JavaScript continues to call the same API Gateway routes, so the AWS backend
+architecture is unchanged.
+
 ## Tests
 
 The project includes local unit tests for the Lambda handlers. They use mocked
@@ -165,6 +174,15 @@ Each API Gateway route maps to a Lambda function. You create this mapping in the
 - ... and so on
 
 API Gateway passes the request body, path parameters, and query string parameters to Lambda via the `event` object.
+
+### Admin request workflow
+
+Administrators can open a request with **View**, then use **Assign** to choose a
+specific active relief center. The selected `centerId` is stored on the request
+as `assignedCenterId` by `update_request_status`, changing the request from
+`pending` to `assigned`. The center can then handle the request and mark it
+`resolved`. The admin dashboard keeps the request table horizontally scrollable
+on smaller screens so all request fields and actions remain accessible.
 
 ### 3. Lambda → DynamoDB
 
