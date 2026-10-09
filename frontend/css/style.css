@@ -832,3 +832,248 @@ tr:hover td { background: #fafbff; }
     .page-banner { padding: 1.5rem; border-radius: 18px; }
     .card { padding: 1.25rem; }
 }
+
+/* --- Operations dashboard polish --- */
+.system-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14);
+}
+
+.page-banner .banner-label {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.7rem;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(253, 186, 116, 0.35);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.66rem;
+    letter-spacing: 0.13em;
+}
+
+.page-banner .banner-label::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fdba74;
+}
+
+.stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stat-card {
+    min-height: 154px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: #6366f1;
+}
+
+.stat-card.danger::before { background: #e11d48; }
+.stat-card.warning::before { background: #f59e0b; }
+.stat-card.success::before { background: #059669; }
+
+.stat-card .stat-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.card-header-row {
+    margin-bottom: 0.2rem;
+}
+
+.card-header-row > span:first-child {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.card-header-row > span:first-child::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 3px;
+    background: #818cf8;
+}
+
+.filter-bar {
+    border: 1px solid #e8edf5;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.filter-bar select,
+.filter-bar input {
+    min-height: 42px;
+}
+
+.filter-bar input {
+    flex: 1 1 220px;
+}
+
+.table-wrapper {
+    border: 1px solid #eef2f7;
+    border-radius: 13px;
+}
+
+table {
+    min-width: 680px;
+}
+
+th:first-child,
+td:first-child {
+    padding-left: 16px;
+}
+
+td {
+    vertical-align: middle;
+}
+
+.badge {
+    border: 1px solid transparent;
+    padding: 0.3rem 0.6rem;
+}
+
+.badge-critical {
+    border-color: #fecdd3;
+}
+
+.badge-high,
+.badge-pending {
+    border-color: #fed7aa;
+}
+
+.badge-assigned {
+    border-color: #c7d2fe;
+}
+
+.badge-resolved,
+.badge-low {
+    border-color: #a7f3d0;
+}
+
+.inventory-item {
+    display: flex;
+    flex-direction: column;
+    min-height: 196px;
+}
+
+.inventory-item .inventory-progress {
+    margin-top: auto;
+}
+
+.inventory-item .inventory-badge {
+    align-self: flex-start;
+}
+
+.info-grid {
+    gap: 0.8rem;
+}
+
+.info-grid > div {
+    padding: 1rem 1.1rem;
+    border: 1px solid #eef2f7;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fbfcff, #f8fafc);
+}
+
+.info-grid p {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+    color: #475569;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 0.88rem;
+}
+
+.info-grid p:last-child {
+    border-bottom: 0;
+}
+
+.info-grid strong {
+    color: #172033;
+}
+
+.low-stock-card {
+    border-color: #fecdd3;
+    background: linear-gradient(135deg, #fff, #fff7f8);
+}
+
+.low-stock-card .card-header {
+    color: #be123c;
+}
+
+.low-stock-card .alert {
+    border-radius: 12px;
+}
+
+.request-steps {
+    position: relative;
+}
+
+.request-step:not(:last-child)::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    margin-left: 0.25rem;
+    background: #e2e8f0;
+}
+
+.request-step {
+    min-width: 0;
+}
+
+.request-step strong {
+    white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stat-card {
+        min-height: 136px;
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.9rem;
+    }
+
+    .request-step:not(:last-child)::after {
+        display: none;
+    }
+
+    .info-grid p {
+        display: block;
+    }
+
+    .info-grid strong {
+        display: block;
+        margin-bottom: 0.15rem;
+    }
+}
