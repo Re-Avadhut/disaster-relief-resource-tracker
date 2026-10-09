@@ -1,6 +1,10 @@
 # IAM Permissions — Least Privilege per Lambda Function
 
 Each Lambda function should have its own IAM execution role with only the permissions it needs.
+Do not reuse a role between functions unless their required actions and resources are
+identical. Every role also needs the Lambda logging permissions from
+`AWSLambdaBasicExecutionRole` (or an equivalent custom policy limited to that function's
+CloudWatch log group).
 
 > **Note**: All resources below use the ARN format:
 > `arn:aws:dynamodb:REGION:ACCOUNT_ID:table/TABLE_NAME`
@@ -114,35 +118,38 @@ Each Lambda function should have its own IAM execution role with only the permis
 
 ---
 
-## Summary: Create Two IAM Roles
+## Role assignment
 
-For simplicity in a course project, you can create **two IAM roles**:
+Create one execution role per Lambda and attach only the policy for that function.
+The role name should match the function, for example `create_center-execution-role`.
+This prevents a read-only function from inheriting write permissions intended for another
+function.
 
-### Role 1: `LambdaReliefCenterRole`
-Used by: `create_center`, `get_center`, `list_centers`, `update_inventory`, `get_inventory`, `get_low_stock`, `login_user`, `get_stats`
+| Lambda | DynamoDB permissions |
+|---|---|
+| `create_center` | `PutItem` on `ReliefCenters`, `Users`, and `Inventory` |
+| `get_center` | `GetItem` on `ReliefCenters` |
+| `list_centers` | `Scan` on `ReliefCenters` |
+| `update_inventory` | `UpdateItem` on `Inventory` |
+| `get_inventory` | `Query` on `Inventory` |
+| `get_low_stock` | `Query` on the `LowStock-index` and `GetItem` on `ReliefCenters` |
+| `submit_request` | `PutItem` on `HelpRequests` |
+| `list_requests` | `Scan` on `HelpRequests` and `Query` on the `StatusUrgency-index` |
+| `update_request_status` | `UpdateItem` on `HelpRequests` |
+| `login_user` | `GetItem` on `Users` and `ReliefCenters` |
+| `get_stats` | `Scan`/`Query` only on the tables and indexes used by the handler |
 
-**Permissions:**
-- `dynamodb:GetItem` on all tables
-- `dynamodb:PutItem` on ReliefCenters, Users, Inventory
-- `dynamodb:UpdateItem` on Inventory
-- `dynamodb:Query` on Inventory (table + LowStock-index)
-- `dynamodb:Scan` on ReliefCenters
-- `dynamodb:Query` on HelpRequests (StatusUrgency-index)
-
-### Role 2: `LambdaRequestRole`
-Used by: `submit_request`, `list_requests`, `update_request_status`
-
-**Permissions:**
-- `dynamodb:PutItem` on HelpRequests
-- `dynamodb:Scan` on HelpRequests
-- `dynamodb:Query` on HelpRequests (StatusUrgency-index)
-- `dynamodb:UpdateItem` on HelpRequests
+Do not grant `dynamodb:*`, grant access to every table, or use `index/*`. The policy
+resource must name the exact table or index required by that function.
 
 ---
 
-## CloudFormation IAM Policy (Optional)
+## Example policy
 
-If you want to use IaC, here's the IAM policy JSON for Role 1:
+The following is the complete DynamoDB policy for the `get_low_stock` function. Create
+equivalent policies for the other functions using the role-assignment table above.
+Replace both placeholders with the deployment region and account ID. The Lambda trust
+policy must allow only `lambda.amazonaws.com`.
 
 ```json
 {
@@ -151,23 +158,35 @@ If you want to use IaC, here's the IAM policy JSON for Role 1:
         {
             "Effect": "Allow",
             "Action": [
-                "dynamodb:GetItem",
-                "dynamodb:PutItem",
-                "dynamodb:UpdateItem",
-                "dynamodb:Query",
-                "dynamodb:Scan"
+                "dynamodb:Query"
             ],
             "Resource": [
-                "arn:aws:dynamodb:us-east-1:*:table/ReliefCenters",
-                "arn:aws:dynamodb:us-east-1:*:table/ReliefCenters/index/*",
-                "arn:aws:dynamodb:us-east-1:*:table/Inventory",
-                "arn:aws:dynamodb:us-east-1:*:table/Inventory/index/*",
-                "arn:aws:dynamodb:us-east-1:*:table/Users",
-                "arn:aws:dynamodb:us-east-1:*:table/Users/index/*",
-                "arn:aws:dynamodb:us-east-1:*:table/HelpRequests",
-                "arn:aws:dynamodb:us-east-1:*:table/HelpRequests/index/*"
+                "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/Inventory/index/LowStock-index"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "dynamodb:GetItem",
+            "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/ReliefCenters"
         }
     ]
 }
 ```
+
+For example, the `submit_request` policy should contain only:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "dynamodb:PutItem",
+            "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/HelpRequests"
+        }
+    ]
+}
+```
+
+Do not attach the example policy to every Lambda. Each function's role must contain
+only its own required statements.

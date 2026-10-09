@@ -248,9 +248,11 @@ Also check that every listed GSI has status **Active**. Do not deploy Lambdas un
 
 Every Lambda needs an execution role. The role gives the Lambda permission to call DynamoDB.
 
-For a beginner deployment, you can use two roles as described in [iam-permissions.md](iam-permissions.md). Separate roles are better than giving every function unrestricted access.
+Create one execution role per Lambda as described in [iam-permissions.md](iam-permissions.md).
+Function-specific roles are required here so that a compromised read-only function
+cannot write to another table.
 
-### 5.1 Create the first role
+### 5.1 Create a function-specific role
 
 1. Open **IAM**.
 2. Select **Roles**.
@@ -260,12 +262,12 @@ For a beginner deployment, you can use two roles as described in [iam-permission
 6. Select **Next**.
 7. Attach `AWSLambdaBasicExecutionRole`.
 8. Select **Next**.
-9. Role name: `LambdaReliefCenterRole`.
+9. Role name: `<function-name>-execution-role`, for example `get_center-execution-role`.
 10. Create the role.
 
 `AWSLambdaBasicExecutionRole` allows Lambda to write logs to CloudWatch. You still need a DynamoDB policy.
 
-### 5.2 Add the DynamoDB policy
+### 5.2 Add only that function's DynamoDB policy
 
 Open the new role:
 
@@ -275,7 +277,7 @@ Open the new role:
 4. Replace the contents with the policy below.
 5. Replace `YOUR_REGION` with your region, such as `ap-south-1`.
 6. Replace `YOUR_ACCOUNT_ID` with your AWS account ID.
-7. Name the policy `ReliefCenterDynamoDBAccess`.
+7. Name the policy `<function-name>-dynamodb-access`.
 8. Create the policy.
 
 ```json
@@ -284,84 +286,26 @@ Open the new role:
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:UpdateItem",
-        "dynamodb:Query",
-        "dynamodb:Scan"
-      ],
-      "Resource": [
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/ReliefCenters",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/ReliefCenters/index/*",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/Inventory",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/Inventory/index/*",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/Users",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/Users/index/*",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/HelpRequests",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/HelpRequests/index/*"
-      ]
+      "Action": "dynamodb:GetItem",
+      "Resource": "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/ReliefCenters"
     }
   ]
 }
 ```
 
-### 5.3 Create the request role
+### 5.3 Repeat for every Lambda
 
-Repeat the process:
+Repeat Sections 5.1 and 5.2 for all eleven functions. For each function, select its
+own role and paste only the actions and exact resources listed in
+[iam-permissions.md](iam-permissions.md). Never select another function's role.
 
-- Role name: `LambdaRequestRole`
-- Trusted entity: Lambda
-- Managed policy: `AWSLambdaBasicExecutionRole`
-- Inline policy name: `RequestDynamoDBAccess`
-
-Use this JSON after replacing the region and account ID:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "dynamodb:PutItem",
-        "dynamodb:UpdateItem",
-        "dynamodb:Query",
-        "dynamodb:Scan"
-      ],
-      "Resource": [
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/HelpRequests",
-        "arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/HelpRequests/index/*"
-      ]
-    }
-  ]
-}
-```
-
-### 5.4 Which role belongs to which Lambda?
-
-Attach `LambdaReliefCenterRole` to:
+For an index permission, use the exact index ARN, for example:
 
 ```text
-create_center
-get_center
-list_centers
-update_inventory
-get_inventory
-get_low_stock
-login_user
-get_stats
+arn:aws:dynamodb:YOUR_REGION:YOUR_ACCOUNT_ID:table/Inventory/index/LowStock-index
 ```
 
-Attach `LambdaRequestRole` to:
-
-```text
-submit_request
-list_requests
-update_request_status
-```
-
-The first time you create each Lambda, select the existing role instead of creating a new one.
+Do not replace it with `index/*`.
 
 ---
 
@@ -379,7 +323,7 @@ Repeat these steps for every function:
 4. Architecture: `x86_64` is fine.
 5. Expand **Change default execution role**.
 6. Select **Use an existing role**.
-7. Select the correct role from Section 5.
+7. Select the role created specifically for this function.
 8. Create the function.
 9. In the function page, open the **Code** tab.
 10. Open the inline editor file, usually `lambda_function.py`.
@@ -951,12 +895,8 @@ Delete all eleven functions.
 
 ### Delete IAM roles
 
-Delete the inline policies first if AWS requires it, then delete:
-
-```text
-LambdaReliefCenterRole
-LambdaRequestRole
-```
+Delete the inline policies first if AWS requires it, then delete each
+`<function-name>-execution-role` created in Section 5.
 
 Keep your personal IAM administrator user if you still need the account.
 
